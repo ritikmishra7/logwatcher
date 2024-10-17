@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Watcher</title>
+    <style>
+        body {
+            font-family: monospace;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            margin: 0;
+            padding: 20px;
+        }
+        #log-container {
+            max-height: 80vh;
+            overflow-y: auto;
+            background-color: #2d2d2d;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Log Watcher</h1>
+    <div id="log-container"></div>
+
+    <script>
+        const logContainer = document.getElementById('log-container');
+        const ws = new WebSocket(`ws://${window.location.host}`);
+
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.type === 'initial') {
+                logContainer.innerHTML = data.lines.join('<br>');
+            } else if (data.type === 'update') {
+                logContainer.innerHTML += data.lines.join('<br>');
+            }
+            logContainer.scrollTop = logContainer.scrollHeight;
+        };
+
+        ws.onclose = function(event) {
+            console.log('WebSocket connection closed:', event);
+        };
+
+        ws.onerror = function(error) {
+            console.error('WebSocket error:', error);
+        };
+    </script>
+</body>
+</html>
